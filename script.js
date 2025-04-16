@@ -80,43 +80,63 @@ function adicionarAoCarrinho(id) {
   fecharModal();
 }
 if (document.getElementById("carrinho")) {
-  const container = document.getElementById("carrinho");
-  const totalDiv = document.getElementById("total");
-  let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
-
-  function atualizarCarrinho() {
-    container.innerHTML = '';
-    let total = 0;
-    carrinho.forEach((item, i) => {
-      total += item.preco * item.quantidade;
-      container.innerHTML += `
-        <div class="card">
-          <img src="${item.imagem}" />
-          <h3>${item.nome}</h3>
-          <p>R$ ${item.preco.toFixed(2)}</p>
-          <input type="number" min="0" value="${item.quantidade}" onchange="atualizarQuantidade(${i}, this.value)" />
-        </div>
-      `;
-    });
-    totalDiv.innerText = `Total: R$ ${total.toFixed(2)}`;
-    localStorage.setItem("carrinho", JSON.stringify(carrinho));
-  }
-
-  window.atualizarQuantidade = function(index, quantidade) {
-    quantidade = parseInt(quantidade);
-    if (quantidade <= 0) {
-      carrinho.splice(index, 1);
-    } else {
-      carrinho[index].quantidade = quantidade;
+    const container = document.getElementById("carrinho");
+    const totalDiv = document.getElementById("total");
+    let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+  
+    function atualizarCarrinho() {
+      container.innerHTML = '';
+      let total = 0;
+  
+      if (carrinho.length === 0) {
+        container.innerHTML = '<p>Seu carrinho está vazio.</p>';
+        totalDiv.innerText = '';
+        return;
+      }
+  
+      carrinho.forEach((item, i) => {
+        total += item.preco * item.quantidade;
+        container.innerHTML += `
+          <div class="card">
+            <img src="${item.imagem}" alt="${item.nome}" />
+            <h3>${item.nome}</h3>
+            <p>Preço: R$ ${item.preco.toFixed(2)}</p>
+            <p>Quantidade: 
+              <input type="number" min="1" value="${item.quantidade}" onchange="atualizarQuantidade(${i}, this.value)" />
+            </p>
+            <button onclick="removerDoCarrinho(${i})">Remover</button>
+          </div>
+        `;
+      });
+  
+      totalDiv.innerText = `Total: R$ ${total.toFixed(2)}`;
+      localStorage.setItem("carrinho", JSON.stringify(carrinho));
     }
+  
+    window.atualizarQuantidade = function(index, quantidade) {
+      quantidade = parseInt(quantidade);
+      if (quantidade <= 0) {
+        carrinho.splice(index, 1);
+      } else {
+        carrinho[index].quantidade = quantidade;
+      }
+      atualizarCarrinho();
+    };
+  
+    window.removerDoCarrinho = function(index) {
+      carrinho.splice(index, 1);
+      atualizarCarrinho();
+    };
+  
+    window.enviarPedido = function() {
+      if (carrinho.length === 0) {
+        alert("Seu carrinho está vazio!");
+        return;
+      }
+      localStorage.removeItem("carrinho");
+      alert("Pedido enviado com sucesso!");
+      window.location.href = "index.html";
+    };
+  
     atualizarCarrinho();
   }
-
-  window.enviarPedido = function() {
-    localStorage.removeItem("carrinho");
-    alert("Pedido enviado com sucesso!");
-    window.location.href = "index.html";
-  }
-
-  atualizarCarrinho();
-}
